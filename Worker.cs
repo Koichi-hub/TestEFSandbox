@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using TestEF.Entities;
 
 namespace TestEF
@@ -45,9 +46,17 @@ namespace TestEF
             var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
             await databaseContext.Database.MigrateAsync(cancellationToken);
 
-            //var chat = await CreateChat(databaseContext, "Chat_1");
-            //await AddMessage(databaseContext, chat.Uid, "Keke");
-            //await AddMessage(databaseContext, chat.Uid, "Lols");
+            var guids = new List<Guid>()
+            {
+                Guid.Parse("83B58C48-A296-450B-BD76-CE0A658EC38E")
+            };
+            var messages = await databaseContext.Messages
+                .Where(x => guids.Contains(x.Uid))
+                .ToListAsync(cancellationToken);
+            foreach (var message in messages)
+            {
+                Console.WriteLine(JsonConvert.SerializeObject(message));
+            }
         }
 
         private async Task<ChatEntity> CreateChat(DatabaseContext databaseContext, string name)
